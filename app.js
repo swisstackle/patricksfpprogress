@@ -1,19 +1,19 @@
 const EXERCISES = [
-  {key:'broad_jump', label:'Broad Jump', units:'m'},
-  {key:'vertical_jump', label:'Vertical Jump', units:'m'},
-  {key:'sprint_top_speed', label:'Sprint Top Speed', units:'m/s'},
-  {key:'max_throw_velocity', label:'Max Throwing Velocity', units:'m/s'}
+  {key:'broad_jump', label:'Broad Jump', units:'inch'},
+  {key:'vertical_jump', label:'Vertical Jump', units:'inch'},
+  {key:'sprint_top_speed', label:'Sprint Top Speed', units:'mph'},
+  {key:'max_throw_velocity', label:'Max Throwing Velocity', units:'mph'}
 ];
 
 function parseCSVThen(callback){
-  Papa.parse('data.csv', {
+  // cache-bust the CSV request to always fetch fresh data
+  Papa.parse('data.csv?cb=' + Date.now(), {
     download: true,
     header: true,
     skipEmptyLines: true,
     complete: results => callback(results.data)
   });
 }
-
 function groupByExercise(rows){
   const out = {};
   EXERCISES.forEach(e=>out[e.key]=[]);

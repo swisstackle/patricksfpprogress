@@ -11,6 +11,15 @@ Files
 
 Data CSV format (header): `exercise,ts,value,units,youtubeId`
 - `exercise`: one of `broad_jump`, `vertical_jump`, `sprint_top_speed`, `max_throw_velocity`
+ - `exercise`: one of `broad_jump`, `vertical_jump`, `sprint_top_speed`, `max_throw_velocity`, `unmotorized_treadmill_top_speed`
+ - `exercise`: one of `broad_jump`, `vertical_jump`, `sprint_top_speed`, `max_throw_velocity`, `unmotorized_treadmill_top_speed`
+
+Note: This project now uses imperial units. Expected units per exercise:
+- `broad_jump`: `ft` (feet)
+- `vertical_jump`: `in` (inches)
+- `sprint_top_speed`: `mph`
+- `max_throw_velocity`: `mph`
+- `unmotorized_treadmill_top_speed`: `mph`
 - `ts`: ISO date like `2025-06-12`
 - `value`: numeric measurement
 - `units`: optional human-readable units
