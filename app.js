@@ -21,7 +21,9 @@ async function fetchServerManifest(){
   try{
     const res = await fetch('/api/exercises', {cache: 'no-store'});
     if(!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+      console.log('[app] fetched /api/exercises manifest:', json);
+    return json;
   }catch(e){
     return null;
   }
@@ -112,10 +114,13 @@ async function render(){
   await Promise.all(keysAndMeta.map(async item=>{
     const key = item.key;
     const file = item.file || (key + '.csv');
+      console.log(`[app] fetching CSV for key=${key} file=${file}`);
     const perRows = await parseCSV(file);
+      console.log(`[app] parsed CSV for key=${key} rows=`, perRows && perRows.length ? perRows.length : 0);
     let useGrouped = {};
     if(perRows && perRows.length){
       useGrouped = groupByExercise(perRows);
+        console.log(`[app] grouped rows for key=${key} groups=`, Object.keys(useGrouped));
     } else {
       useGrouped[key] = [];
     }
@@ -136,6 +141,7 @@ async function render(){
     }
     const domLabel = document.querySelector(`section.exercise[data-exercise="${key}"] h2`)?.textContent;
     const finalMeta = {label: meta.label || domLabel || key.replace(/_/g,' '), units: meta.units || DEFAULT_UNITS};
+    console.debug(`[app] rendering section for key=${key} meta=`, finalMeta);
     ensureSectionForExercise(key, finalMeta);
     renderExerciseFromGrouped(key, useGrouped, finalMeta);
   }));
@@ -166,10 +172,46 @@ function renderExerciseFromGrouped(key, grouped, meta){
   // set latest video if present
   const last = [...data].reverse().find(d=>d.youtubeId);
   const iframe = document.getElementById('video-'+key);
+  function toEmbedUrlFromLink(link){
+    if(!link || typeof link !== 'string') return null;
+    const s = link.trim();
+    // only accept full URLs (require protocol)
+    if(!/^https?:\/\//i.test(s)) return null;
+    try{
+      const u = new URL(s);
+      const host = u.hostname.toLowerCase();
+      // youtu.be short link
+      if(host === 'youtu.be'){
+        const id = u.pathname.replace(/^\//, '').split('/')[0];
+        return id ? `https://www.youtube.com/embed/${id}` : null;
+      }
+      // youtube domains
+      if(host.endsWith('youtube.com') || host.endsWith('youtube-nocookie.com')){
+        // /watch?v=ID
+        if(u.searchParams && u.searchParams.get('v')){
+          const id = u.searchParams.get('v');
+          return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+        // /embed/ID or /shorts/ID or other path forms
+        const parts = u.pathname.split('/').filter(Boolean);
+        const lastPart = parts[parts.length-1];
+        if(lastPart) return `https://www.youtube.com/embed/${lastPart}`;
+      }
+    }catch(e){
+      return null;
+    }
+    return null;
+  }
+
   if(iframe){
-    if(last && last.youtubeId){
-      iframe.src = `https://www.youtube.com/embed/${last.youtubeId}`;
+    const raw = last && last.youtubeId ? last.youtubeId : null;
+    console.log(`[app] last video for key=${key}:`, raw);
+    const embed = toEmbedUrlFromLink(raw);
+    if(embed){
+      console.log(`[app] setting iframe.src for key=${key} to ${embed} (from ${raw})`);
+      iframe.src = embed;
     } else {
+      console.log(`[app] clearing iframe.src for key=${key} (no valid link)`);
       iframe.src = '';
     }
   }
