@@ -1,8 +1,3 @@
-## How data flows
-1. If `DATA_SOURCE_URL` is set, `server.js` fetches it and parses the single grouped CSV. It groups rows by the `exercise` column and builds the `/api/exercises` manifest. Manifest entries include `key`, `file` (typically `/data.csv`), `url`, and optional metadata `label` and `units` discovered from CSV rows.
-2. If fetching/parsing `DATA_SOURCE_URL` fails, the server falls back to a local `data.csv` file in the project root (if present) and builds the manifest from that single file.
-3. The frontend fetches the manifest and then fetches the single grouped CSV (proxied at `/data.csv`) and groups rows client-side by exercise.
-# Alain's Functionalpatterns Progress
 # Alain's Functionalpatterns Progress
 
 **Overview**
